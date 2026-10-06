@@ -64,4 +64,10 @@ flutter:
     - flutter_scene_generated/
 ```
 
-3. Run `flutter pub get` to finalize setup and then `dart run flutter_scene:init`. Press Y for Skills
+3. Run `flutter pub get` to resolve dependencies, then run the initialization CLI tool:
+   ```bash
+   flutter pub get
+   dart run flutter_scene:init
+   ```
+   > [!NOTE]
+   > When prompted during `dart run flutter_scene:init`, press `y` (Yes) to install or update the agent skills for `flutter_scene`.
