@@ -1,15 +1,38 @@
 ---
 name: flutter-basic-setup
-description: "Provides standardized boilerplate and configuration templates for a new Flutter project including standard dependencies, dev_dependencies, l10n.yaml, build.yaml (Drift and worker compilation), analysis_options.yaml, and Drift WASM web worker tools and sqlite3.wasm asset."
+description: "Provides standardized boilerplate and configuration templates for a new Flutter project including standard dependencies, dev_dependencies, l10n.yaml, build.yaml (Drift and worker compilation), analysis_options.yaml, devtools_options.yaml, and Drift WASM web worker tools and sqlite3.wasm asset."
 ---
 
 # Flutter Basic Project Setup Skill
 
-Use this skill when setting up a new project with the project's standard architecture, dependencies, localization settings, build-runner configurations, and Drift WASM web worker tools and `sqlite3.wasm`.
+Use this skill when setting up a new project with the project's standard architecture, dependencies, localization settings, build-runner configurations, DevTools options, and Drift WASM web worker tools and `sqlite3.wasm`.
+
+> [!IMPORTANT]
+> **Always use the CLI to add packages and dependencies!**
+> Do not manually edit `pubspec.yaml` to add packages or dependencies. Always use the command line interface:
+> - SDK packages (e.g., `flutter_localizations`) must be added as a separate command:
+>   `flutter pub add flutter_localizations --sdk=flutter`
+> - Normal dependencies (without version constraints so `pub` resolves the latest compatible versions):
+>   `flutter pub add <package_name_1> <package_name_2> ...`
+> - Dev dependencies (without version constraints):
+>   `flutter pub add --dev <dev_package_name_1> <dev_package_name_2> ...`
 
 ## 1. Dependencies & Dev Dependencies (`pubspec.yaml`)
 
-Add the following to `pubspec.yaml`:
+Run the following CLI commands to add the required packages:
+
+```bash
+# Add SDK dependency (separate command)
+flutter pub add flutter_localizations --sdk=flutter
+
+# Add third-party dependencies (no explicit version constraints)
+flutter pub add intl bloc_signals_flutter drift drift_flutter kaisel path_provider
+
+# Add dev dependencies (no explicit version constraints)
+flutter pub add --dev build build_runner build_web_compilers drift_dev kaisel_lint
+```
+
+Reference structure in `pubspec.yaml`:
 
 ```yaml
 dependencies:
@@ -17,22 +40,22 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  intl: ^0.20.3
-  bloc_signals_flutter: ^1.3.2
-  drift: ^2.35.1
-  drift_flutter: ^0.3.1
-  kaisel: ^1.1.0
-  path_provider: ^2.1.6
+  intl:
+  bloc_signals_flutter:
+  drift:
+  drift_flutter:
+  kaisel:
+  path_provider:
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
-  build: ^4.0.7
-  build_runner: ^2.15.1
-  build_web_compilers: ^4.8.5
-  drift_dev: ^2.35.1
-  kaisel_lint: ^0.5.1
+  flutter_lints:
+  build:
+  build_runner:
+  build_web_compilers:
+  drift_dev:
+  kaisel_lint:
 ```
 
 ## 2. Localization Configuration (`l10n.yaml`)
@@ -95,6 +118,12 @@ targets:
           - tools/drift_worker.dart
         options:
           compiler: dart2js
+        dev_options:
+          dart2js_args:
+            - --no-minify
+        release_options:
+          dart2js_args:
+            - -O4
       ":copy_compiled_worker_js":
         enabled: true
 
@@ -111,19 +140,16 @@ builders:
 
 ## 4. Linting Configuration (`analysis_options.yaml`)
 
-Configure `analysis_options.yaml`:
+Configure `analysis_options.yaml` in the project root (ensure the plugin version matches the latest `kaisel_lint` version in `pubspec.yaml`):
 
 ```yaml
-extensions:
-  - drift: true
-
 include:
   - package:flutter_lints/flutter.yaml
   - package:kaisel_lint/recommended.yaml
 
 plugins:
   kaisel_lint:
-    version: ^0.5.1
+    version: ^0.5.1 # Always specify the latest version matching pubspec.yaml
     diagnostics:
       prefer_const_route_constructors: true
       prefer_pattern_match_over_is_check: true
@@ -131,9 +157,18 @@ plugins:
       prefer_push_or_replace_top_in_adaptive: false
 ```
 
-## 5. Drift WASM Web Worker, Custom Builder (`tools/`) & `sqlite3.wasm` (`web/`)
+## 5. DevTools Configuration (`devtools_options.yaml`)
 
-- Ensure `web/sqlite3.wasm` is present in the `web/` directory for SQLite WebAssembly support in Drift.
+Create `devtools_options.yaml` in the project root to enable Flutter DevTools extensions (such as Drift inspection):
+
+```yaml
+extensions:
+  - drift: true
+```
+
+## 6. Drift WASM Web Worker, Custom Builder (`tools/`) & `sqlite3.wasm` (`web/`)
+
+- Ensure `web/sqlite3.wasm` is present in the `web/` directory for SQLite WebAssembly support in Drift. Please download the `sqlite3.wasm` file from the official Drift releases page: [https://github.com/simolus3/drift/releases](https://github.com/simolus3/drift/releases) (download `sqlite3.wasm` from the latest release assets and place it in `web/sqlite3.wasm`).
 - `tools/builder.dart`:
 ```dart
 import 'package:build/build.dart';
